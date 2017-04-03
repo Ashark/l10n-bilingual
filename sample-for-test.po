@@ -1,0 +1,79 @@
+# This file is for testing with bilingwise utility
+
+# case 1
+msgid ""
+msgstr ""
+"Project-Id-Version: Kdenlive 0.8.0\n"
+"Report-Msgid-Bugs-To: http://bugs.kde.org\n"
+
+# case 2
+#: data/effects/frei0r_alpha0ps.xml:9 data/effects/frei0r_alpha0ps.xml:41
+#, kde-format
+msgid ""
+"Image,Alpha as gray,Gray + red,Selection on black,Selection on gray,"
+"Selection on white,Selection on checkers"
+msgstr ""
+"Изображение,Альфа как градации серого,Градации серого + красный,Выделение на "
+"чёрном,Выделение на сером,Выделение на белом,Выделение на шахматных клетках"
+
+
+# case 3
+#: data/effects/frei0r_alpha0ps.xml:19 data/effects/frei0r_alpha0ps.xml:51
+#: data/effects/frei0r_alphagrad.xml:30 data/effects/frei0r_alphaspot.xml:47
+#: data/effects/frei0r_select0r.xml:45 data/effects/frei0r_select0r.xml:96
+#, kde-format
+msgid "Operation"
+msgstr "Операция"
+
+# case 4
+#: data/effects/frei0r_alpha0ps.xml:9 data/effects/frei0r_alpha0ps.xml:41
+#, kde-format
+msgid ""
+"Image,Alpha as gray,Gray + red,Selection on black,Selection on gray,"
+"Selection on white,Selection on checkers"
+msgstr ""
+"Изображение,Альфа как градации серого,Градации серого + красный,Выделение на "
+"чёрном,Выделение на сером,Выделение на белом,Выделение на шахматных клетках"
+
+# case 5
+#: data/effects/frei0r_colgate.xml:5
+#, kde-format
+msgid ""
+"Do simple color correction, in a physically meaningful\n"
+"way"
+msgstr ""
+
+# case 6:
+#: src/bin/bin.cpp:909 src/bin/bin.cpp:1115 src/timeline/timeline.cpp:546
+#, kde-format
+msgid ""
+"Your project file was modified by Kdenlive.\n"
+"To make sure you don't lose data, a backup copy called %1 was created."
+msgstr ""
+"Ваш проектный файл был изменён Kdenlive.\n"
+"На всякий случай создана резервная копия\n"
+"%1."
+
+# case 7:
+#: src/dvdwizard/dvdwizard.cpp:889
+#, kde-format
+msgid "Folder %1 already exists. Overwrite?\n"
+msgstr ""
+"Папка %1 уже существует.\n"
+"Вы хотите её перезаписать?\n"
+
+# case 8:
+#: src/timeline/timeline.cpp:966
+#, kde-format
+msgid "Invalid clip removed from track %1 at %2\n"
+msgstr "Некорректный клип удален с дорожки %1 (%2)\n"
+
+# case 9
+#: data/effects/frei0r_alpha0ps.xml:18
+#, kde-format
+msgid "NO OP,Shave,Shrink hard,Shrink soft,Grow hard,Grow soft,Threshold"
+msgstr ""
+"Без операции,Вырезать,Вырезать резко,Вырезать плавно,Нарастить резко,"
+"Нарастить плавно,Порог"
+
+# some comment

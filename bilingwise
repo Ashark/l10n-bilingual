@@ -1,0 +1,250 @@
+#!/bin/bash
+
+INPUT_FILE=$1
+OUTPUT_FILE=$INPUT_FILE.ru-with-en.po
+
+FIRST_STRING_IN_MSGID=""
+FIRST_STRING_IN_MSGSTR=""
+CURRENT_MSGID="" # contains msgid without first string
+CURRENT_MSGSTR="" # contains msgstr without first string
+STAGED_SINGLE_LINE_MSGSTR=""
+
+REGEX_MSGID="^msgid \"(.*)\""
+REGEX_MSGSTR="^msgstr \"(.*)\""
+REGEX_STARTS_ON_QUOTE="^\"+"
+REGEX_ENDS_ON_NEWLINE="\\n$"
+
+# testvar="\"lalala\\n"
+# echo [$testvar]
+# if [[ "$testvar" =~ $REGEX_ENDS_ON_NEWLINE ]]; then echo "yes"; else echo "no"; fi; exit
+
+
+truncate -s0 $OUTPUT_FILE
+MULTI_LINE_MSGID="false"
+MULTI_LINE_MSGSTR="false"
+
+NOW_READING="none" # {msgid, msgstr, none }
+
+line_number=0
+
+
+function show_debug {
+    :
+#     echo -e "\tEXTRACTED_STRING=[$EXTRACTED_STRING], PREVIOUS_CHARACTER=[$PREVIOUS_CHARACTER]"
+}
+
+function quote_respecting_echo {
+    :
+# I want to echo some string, containing new lines to output,
+# but for some reason, echo -e works wrong (at least, unexpected for me).
+# It interprets "\n" within qoutes.
+# More of that, it is not possible to escape "\n" using "\\n".
+# If you know the reason, please let me know. Thanks.
+# For example, our string is:
+# msgstr ""\n"\n"\n"Do simple color correction, in a physically meaningful\n"\n"way"
+# I expect echo -e to only interpret \n which are not in quotes.
+# So, result I want:
+# msgstr ""
+# "\n"
+# "Do simple color correction, in a physically meaningful\n"
+# "way"
+# 
+# But even if I modify string this way, echo -e still parses escaped backslashed newlines:
+# msgstr ""\n"\\n"\n"Do simple color correction, in a physically meaningful\\n"\n"way"
+# and gives me:
+# msgstr ""
+# "
+# "
+# "Do simple color correction, in a physically meaningful
+# "
+# "way"
+
+string=$1
+
+IS_INSIDE_QUOTES="false"
+EXTRACTED_STRING=""
+PREVIOUS_CHARACTER=""
+
+while test -n "$string"; do
+   c=${string:0:1}     # Get the first character
+    show_debug
+#     echo character is "'$c'"
+   string=${string:1}   # trim the first character
+   
+   if ! [[ $c == '"' ]]; then
+        EXTRACTED_STRING="$EXTRACTED_STRING$c"
+        PREVIOUS_CHARACTER=$c
+#         show_debug
+        continue
+    else
+        if [[ $PREVIOUS_CHARACTER == '\' ]]; then
+            EXTRACTED_STRING="$EXTRACTED_STRING$c"
+            PREVIOUS_CHARACTER=$c
+            continue
+        else
+            if [[ $IS_INSIDE_QUOTES == "true" ]]; then
+                echo -n "\"$EXTRACTED_STRING\""
+                EXTRACTED_STRING=""
+                PREVIOUS_CHARACTER=""
+                IS_INSIDE_QUOTES="false"
+                continue
+            else
+                echo -en "$EXTRACTED_STRING"
+                EXTRACTED_STRING=""
+                PREVIOUS_CHARACTER=""
+                IS_INSIDE_QUOTES="true"
+                continue
+            fi
+            
+        fi
+    
+   fi
+done
+#  echo -e "\n"
+
+}
+
+# This is strings for demonstration
+# str="msgstr \"\"\\n\"\\n\"\\n\"Do simple color correction, in a physically meaningful\\n\"\\n\"way\""
+# echo "usual echoed:"
+# echo "$str"
+# echo "usual with -e echoed"
+# echo -e "$str"
+# echo "quote respecting echoed"
+# quote_respecting_echo "$str"
+# exit
+# If there is more elegant way, than my qoute_respecting_echo function, please let me know
+
+
+
+
+function apply_staging_single {
+    if [[ $STAGED_SINGLE_LINE_MSGSTR != "" ]]; then
+         echo "${STAGED_SINGLE_LINE_MSGSTR}" >> $OUTPUT_FILE;
+#          echo -e "\n" >> $OUTPUT_FILE
+        STAGED_SINGLE_LINE_MSGSTR="";
+    fi
+}
+
+while read -r line
+do
+    let "line_number = $line_number + 1"
+    echo $line_number, ml_msgid=$MULTI_LINE_MSGID, ml_msgstr=$MULTI_LINE_MSGSTR, now_reading=$NOW_READING, staged_single=[$STAGED_SINGLE_LINE_MSGSTR]
+#     if [[ $line_number == 670 ]]; then   break; fi
+
+
+    if [[ "$line" =~ $REGEX_MSGID ]]; then
+        apply_staging_single
+        NOW_READING="msgid"
+        FIRST_STRING_IN_MSGID=${BASH_REMATCH[1]}
+        echo -e "\tFound msgid on line $line_number\n\tPassing this line"
+        echo $line >> $OUTPUT_FILE
+        continue
+    fi
+
+
+    if [[ "$line" =~ $REGEX_MSGSTR ]]; then
+        NOW_READING="msgstr"
+        FIRST_STRING_IN_MSGSTR=${BASH_REMATCH[1]}
+        echo -e "\tFound msgstr on line $line_number"
+        if [[ $MULTI_LINE_MSGID == "false" ]]; then
+            echo -e "\tFor now we cannot surely say if msgstr is multiline or not, so"\
+                    "we do not pass this line, but stage one-line bilingued msgstr"
+            if [[ "$FIRST_STRING_IN_MSGSTR" =~ $REGEX_ENDS_ON_NEWLINE ]]; then
+                STAGED_SINGLE_LINE_MSGSTR="msgstr \"$FIRST_STRING_IN_MSGSTR$FIRST_STRING_IN_MSGID\""
+            else
+                STAGED_SINGLE_LINE_MSGSTR="msgstr \"$FIRST_STRING_IN_MSGSTR ($FIRST_STRING_IN_MSGID)\""
+            fi
+            continue
+        else
+            echo -e "\tWe know, that msgid was multiline, so we wont stage one-lined bilingued msgstr.\n"\
+                    "\tHowever, we do not know if msgstr is multiline or not, so now we just pass line"
+            echo $line >> $OUTPUT_FILE
+            echo "        Current_msgid=[$CURRENT_MSGID]"
+            continue
+        fi
+    fi
+
+
+    if [[ "$line" =~ $REGEX_STARTS_ON_QUOTE ]]; then
+        echo -e "\tFound string starting with quote"
+        if [[ $STAGED_SINGLE_LINE_MSGSTR != "" ]]; then
+            echo -e "\tDrop staged one-line bilingued msgstr, as it will be multiline.\n\tPass line with empty msgstr";
+            echo "msgstr \"\"" >> $OUTPUT_FILE ;
+        fi
+        STAGED_SINGLE_LINE_MSGSTR="" # we will not use single lined msgstr
+        if [[ $NOW_READING == "msgid" ]]; then
+            echo -e "\tAdding this line to current_msgid"
+            CURRENT_MSGID="$CURRENT_MSGID\n$line"
+            MULTI_LINE_MSGID="true"
+            echo $line >> $OUTPUT_FILE
+            continue
+        elif [[ $NOW_READING == "msgstr" ]]; then
+            echo -e "\tAdding this line to current_msgstr"
+            CURRENT_MSGSTR="$CURRENT_MSGSTR\n$line"
+            MULTI_LINE_MSGSTR="true"
+            echo $line >> $OUTPUT_FILE
+            continue
+        fi
+    fi
+
+
+    if [[ $MULTI_LINE_MSGSTR == "true" ]]; then
+        echo -e "\tEnd of multiline msgstr detected"
+        MULTI_LINE_MSGSTR="false"
+        MULTI_LINE_MSGID="false"
+        NOW_READING="none"
+        echo "        Adding \"\n\" string without trailing new line"
+        echo -n "\"\n\"" >> $OUTPUT_FILE
+        if [[ $FIRST_STRING_IN_MSGID != "" ]]; then
+            echo -ne "\tFirst_string_in_msgid is not empty, so pass it"; echo " [$FIRST_STRING_IN_MSGID]";
+#             echo -en "\n\"$FIRST_STRING_IN_MSGID\"" >> $OUTPUT_FILE; 
+            echo -en "\n\"" >> $OUTPUT_FILE;
+            echo -n "$FIRST_STRING_IN_MSGID" >> $OUTPUT_FILE;
+            echo "\"" >> $OUTPUT_FILE; 
+        else 
+            echo -e "\tfirst_string_in_msgid is empty, so skip it"; 
+        fi
+        
+        echo "        Passing current_msgid which is [$CURRENT_MSGID]"
+            quote_respecting_echo "$CURRENT_MSGID" >> $OUTPUT_FILE
+            echo -e "\n" >> $OUTPUT_FILE # It makes additional unwanted line, but wo it, line is not passed. Help me fix it please.
+        CURRENT_MSGID=""
+        echo "        Passing current line, which is [$line]"
+        echo $line >> $OUTPUT_FILE
+        continue
+    else
+        if [[ $STAGED_SINGLE_LINE_MSGSTR != "" && $MULTI_LINE_MSGID == "false" ]]; then 
+            echo "        It was single line msgstr and single line msgid, so pass staged msgstr, which is [$STAGED_SINGLE_LINE_MSGSTR]";
+            apply_staging_single;
+        fi
+        
+        if [[ $STAGED_SINGLE_LINE_MSGSTR != "" && $MULTI_LINE_MSGID == "true" ]]; then 
+            echo "        It was single line msgstr, but multi line msgid";
+            echo -e "\tPassing msgstr with its first line"
+            echo "msgstr \"$FIRST_STRING_IN_MSGSTR\"" >> $OUTPUT_FILE
+            echo -e "\tDropping staged msgstr"
+            STAGED_SINGLE_LINE_MSGSTR=""
+            echo "        Adding \"\n\" string without trailing new line"
+            echo -n "\"\n\"" >> $OUTPUT_FILE
+            echo "        Passing current_msgid which is [$CURRENT_MSGID]"
+            quote_respecting_echo "$CURRENT_MSGID" >> $OUTPUT_FILE
+#             echo -e "\n" >> $OUTPUT_FILE # for new line to be placed after multiline current_msgid wo trailing new line
+            CURRENT_MSGID=""
+        fi
+
+
+        NOW_READING="none"
+        echo -e "\tPass current line, which is [$line]"
+        echo "$line" >> $OUTPUT_FILE
+        MULTI_LINE_MSGID="false" # reset multiline flag, as we finished with this block
+        CURRENT_MSGID="" # clear current_msgid
+        CURRENT_MSGSTR="" # clear current_msgstr
+        continue
+    fi
+
+    echo going to next line # this should not happen
+
+done < "$INPUT_FILE"
+
+apply_staging_single # for case when INPUT_FILE do not contain trailing new line
