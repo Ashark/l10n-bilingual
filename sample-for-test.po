@@ -76,4 +76,11 @@ msgstr ""
 "Без операции,Вырезать,Вырезать резко,Вырезать плавно,Нарастить резко,"
 "Нарастить плавно,Порог"
 
+# case 10
+#: src/mainwindow.cpp:1035
+#, kde-format
+msgctxt "Spacer tool shortcut"
+msgid "m"
+msgstr "м"
+
 # some comment

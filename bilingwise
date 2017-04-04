@@ -3,6 +3,7 @@
 INPUT_FILE=$1
 OUTPUT_FILE=$INPUT_FILE.ru-with-en.po
 
+CURRENT_MSGCTXT=""
 FIRST_STRING_IN_MSGID=""
 FIRST_STRING_IN_MSGSTR=""
 CURRENT_MSGID="" # contains msgid without first string
@@ -13,15 +14,17 @@ REGEX_MSGID="^msgid \"(.*)\""
 REGEX_MSGSTR="^msgstr \"(.*)\""
 REGEX_STARTS_ON_QUOTE="^\"+"
 REGEX_ENDS_ON_NEWLINE="\\n$"
+REGEX_MSGCTXT_SOME_TOOL_SHORTCUT="^msgctxt \".* tool shortcut\""
 
-# testvar="\"lalala\\n"
+# testvar="msgctxt \"Razor tool shortcut\"" #\"lalala\\n"
 # echo [$testvar]
-# if [[ "$testvar" =~ $REGEX_ENDS_ON_NEWLINE ]]; then echo "yes"; else echo "no"; fi; exit
+# if [[ "$testvar" =~ $REGEX_SOME_TOOL_SHORTCUT ]]; then echo "yes"; else echo "no"; fi; exit
 
 
 truncate -s0 $OUTPUT_FILE
 MULTI_LINE_MSGID="false"
 MULTI_LINE_MSGSTR="false"
+CTXT_SOME_TOOL_SHORTCUT="false"
 
 NOW_READING="none" # {msgid, msgstr, none }
 
@@ -129,9 +132,15 @@ function apply_staging_single {
 while read -r line
 do
     let "line_number = $line_number + 1"
-    echo $line_number, ml_msgid=$MULTI_LINE_MSGID, ml_msgstr=$MULTI_LINE_MSGSTR, now_reading=$NOW_READING, staged_single=[$STAGED_SINGLE_LINE_MSGSTR]
+    echo $line_number, ml_msgid=$MULTI_LINE_MSGID, ml_msgstr=$MULTI_LINE_MSGSTR, now_reading=$NOW_READING, staged_single=[$STAGED_SINGLE_LINE_MSGSTR], msgctxt=$CTXT_SOME_TOOL_SHORTCUT
 #     if [[ $line_number == 670 ]]; then   break; fi
 
+    if [[ "$line" =~ $REGEX_MSGCTXT_SOME_TOOL_SHORTCUT ]]; then
+        echo -e "\tFound msgctxt with some tool shortcut on line $line_number\n\tPassing this line"
+        CTXT_SOME_TOOL_SHORTCUT="true"
+        echo $line >> $OUTPUT_FILE
+        continue
+    fi
 
     if [[ "$line" =~ $REGEX_MSGID ]]; then
         apply_staging_single
@@ -150,7 +159,11 @@ do
         if [[ $MULTI_LINE_MSGID == "false" ]]; then
             echo -e "\tFor now we cannot surely say if msgstr is multiline or not, so"\
                     "we do not pass this line, but stage one-line bilingued msgstr"
-            if [[ "$FIRST_STRING_IN_MSGSTR" =~ $REGEX_ENDS_ON_NEWLINE ]]; then
+            if [[ $CTXT_SOME_TOOL_SHORTCUT == "true" ]]; then
+                 echo -e "\tWe are in context of some tool shortcut. So we just pass line\n"
+                 echo $line >> $OUTPUT_FILE
+                 CTXT_SOME_TOOL_SHORTCUT="false"
+            elif [[ "$FIRST_STRING_IN_MSGSTR" =~ $REGEX_ENDS_ON_NEWLINE ]]; then
                 STAGED_SINGLE_LINE_MSGSTR="msgstr \"$FIRST_STRING_IN_MSGSTR$FIRST_STRING_IN_MSGID\""
             else
                 STAGED_SINGLE_LINE_MSGSTR="msgstr \"$FIRST_STRING_IN_MSGSTR ($FIRST_STRING_IN_MSGID)\""

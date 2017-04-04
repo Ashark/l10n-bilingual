@@ -35,9 +35,4 @@ Also it it usefull when you are watching english tutorials, but at the same time
 - [ ] Remove additional unwanted new lines after quote_respecting_echo function
 - [ ] Make additional locale (i.e. ru-with-en), instead of replacing existing locale (i.e. de).
 - [ ] Make translation of other generic strings (like File, Edit, etc...).
-- [ ] Fix errors on start with bilingual interface. For example:
-
-> There are two actions (Обычный режим (Normal mode), Выделение (Selection tool)) that want to use the same shortcut ().
-> This is most probably a bug. Please report it in bugs.kde.org
-
 - [ ] Make script to automatize all remaining po file to bilingwise automatically (so, we could bilingwise all applications)
