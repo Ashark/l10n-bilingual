@@ -16,7 +16,6 @@ msgstr ""
 "Изображение,Альфа как градации серого,Градации серого + красный,Выделение на "
 "чёрном,Выделение на сером,Выделение на белом,Выделение на шахматных клетках"
 
-
 # case 3
 #: data/effects/frei0r_alpha0ps.xml:19 data/effects/frei0r_alpha0ps.xml:51
 #: data/effects/frei0r_alphagrad.xml:30 data/effects/frei0r_alphaspot.xml:47
@@ -82,5 +81,18 @@ msgstr ""
 msgctxt "Spacer tool shortcut"
 msgid "m"
 msgstr "м"
+
+# case 11:
+#. i18n: ectx: Menu (file)
+#: ui_standards.rc:5
+#, kde-format
+msgid "&File"
+msgstr "&Файл"
+
+# case 12:
+#: src/titler/unicodedialog.cpp:189
+#, kde-format
+msgid "Minus sign. For numbers: &#x2212;42"
+msgstr "Знак минус. Для номеров: &#x2212;42"
 
 # some comment

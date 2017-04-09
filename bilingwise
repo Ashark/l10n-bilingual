@@ -15,10 +15,12 @@ REGEX_MSGSTR="^msgstr \"(.*)\""
 REGEX_STARTS_ON_QUOTE="^\"+"
 REGEX_ENDS_ON_NEWLINE="\\n$"
 REGEX_MSGCTXT_SOME_TOOL_SHORTCUT="^msgctxt \".* tool shortcut\""
+REGEX_CONTAINS_AMPERSAND=".*&.*"
 
-# testvar="msgctxt \"Razor tool shortcut\"" #\"lalala\\n"
+# testvar="msgid \"&File\""
+# testvar="\"lalala\\n"
 # echo [$testvar]
-# if [[ "$testvar" =~ $REGEX_SOME_TOOL_SHORTCUT ]]; then echo "yes"; else echo "no"; fi; exit
+# if [[ "$testvar" =~ $REGEX_CONTAINS_AMPERSAND ]]; then echo "yes"; else echo "no"; fi; exit
 
 
 truncate -s0 $OUTPUT_FILE
@@ -165,6 +167,10 @@ do
                  CTXT_SOME_TOOL_SHORTCUT="false"
             elif [[ "$FIRST_STRING_IN_MSGSTR" =~ $REGEX_ENDS_ON_NEWLINE ]]; then
                 STAGED_SINGLE_LINE_MSGSTR="msgstr \"$FIRST_STRING_IN_MSGSTR$FIRST_STRING_IN_MSGID\""
+            elif [[ "$FIRST_STRING_IN_MSGID" =~ $REGEX_CONTAINS_AMPERSAND ]]; then
+                echo -e "\tmsgid contains ampersand, drop it and stage one-line msgstr"
+                FIRST_STRING_IN_MSGID=`echo "${FIRST_STRING_IN_MSGID//&}"`
+                STAGED_SINGLE_LINE_MSGSTR="msgstr \"$FIRST_STRING_IN_MSGSTR ($FIRST_STRING_IN_MSGID)\""
             else
                 STAGED_SINGLE_LINE_MSGSTR="msgstr \"$FIRST_STRING_IN_MSGSTR ($FIRST_STRING_IN_MSGID)\""
             fi
@@ -231,7 +237,7 @@ do
             echo "        It was single line msgstr and single line msgid, so pass staged msgstr, which is [$STAGED_SINGLE_LINE_MSGSTR]";
             apply_staging_single;
         fi
-        
+
         if [[ $STAGED_SINGLE_LINE_MSGSTR != "" && $MULTI_LINE_MSGID == "true" ]]; then 
             echo "        It was single line msgstr, but multi line msgid";
             echo -e "\tPassing msgstr with its first line"

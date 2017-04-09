@@ -48,5 +48,5 @@ Also it it usefull when you are watching english tutorials, but at the same time
 - [ ] Make case 9 to work properly
 - [ ] Remove additional unwanted new lines after quote_respecting_echo function
 - [ ] Make qt to understand custom locales (i.e. ru-bilingual). Now we are replacing exotic locale (i.e. ts or zu).
-- [ ] Make translation of other generic strings (like File, Edit, etc...) to not contain ampersands.
+- [ ] Make translation other than generic strings (like File, Edit, etc...) to contain ampersands (see case 12 in sample-for-tests.po).
 - [ ] Make script to automatize all remaining po file to bilingwise automatically (so, we could bilingwise all applications)
