@@ -5,7 +5,7 @@ replace_lang=ts
 inflate_lang=x-test
 
 pkgname=l10n-$bilingwise_lang-bilingual-svn
-pkgver=r1486904
+pkgver=r1486963
 pkgrel=1
 pkgdesc="Bilingual locale for $bilingwise_lang (replaces $replace_lang)"
 arch=("x86_64")
@@ -36,7 +36,9 @@ pkgver() {
 }
 
 prepare() {
+    # replacing inflate_lang original po files by bilingual bilingwise_lang po files
     chmod a+x bilingwise
+
     ./bilingwise "$srcdir"/$bilingwise_lang/messages/kdemultimedia/kdenlive.po > /dev/null
     mv "$srcdir"/$bilingwise_lang/messages/kdemultimedia/kdenlive.po.ru-with-en.po "$srcdir"/$inflate_lang/messages/kdemultimedia/kdenlive.po
 
@@ -45,12 +47,14 @@ prepare() {
 
     ./bilingwise "$srcdir"/$bilingwise_lang/messages/frameworks/kconfigwidgets5.po > /dev/null
     mv "$srcdir"/$bilingwise_lang/messages/frameworks/kconfigwidgets5.po.ru-with-en.po "$srcdir"/$inflate_lang/messages/frameworks/kconfigwidgets5.po
-
-    echo -e "add_subdirectory(frameworks)\nadd_subdirectory(kdemultimedia)\n" > "$srcdir"/$inflate_lang/messages/CMakeLists.txt # to avoid building unnesessary directories
 }
 
 build() {
     ./scripts/autogen.sh $inflate_lang
+    echo -e "add_subdirectory(frameworks)\nadd_subdirectory(kdemultimedia)\n" > "$srcdir"/$inflate_lang/messages/CMakeLists.txt # to avoid building unnesessary directories. Should be after autogen.sh
+    sed -i -- 's/*.po/kdenlive.po kdenlive_xml_mimetypes.po/g' "$srcdir"/$inflate_lang/messages/kdemultimedia/CMakeLists.txt # to only build needed files. Should be after autogen.sh
+    sed -i -- 's/*.po/kxmlgui5.po kconfigwidgets5.po/g' "$srcdir"/$inflate_lang/messages/frameworks/CMakeLists.txt # to only build needed files. Should be after autogen.sh
+
     mkdir -p $inflate_lang-build
     cd $inflate_lang-build
     cmake \
