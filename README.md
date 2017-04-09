@@ -12,6 +12,7 @@ Also it it usefull when you are watching english tutorials, but at the same time
 * sample-for-tests.po - file for testing how bilingwise processes different cases
 * README.md - this readme
 * PKGBUILD - makepkg script for building additional localization package for ArchLinux
+* remakepkg - script for conviniently remaking package, automatically install it and start kdenlive
 
 # Usage:
 
@@ -24,6 +25,16 @@ Also it it usefull when you are watching english tutorials, but at the same time
 * Run makepkg and install new package.
 * Start kdenlive, go to Help -> Switch Application Language and choose exotic language, that you set in ```replace_lang```.
 * Restart kdenlive and enjoy bilingual interface
+
+## Remaking bilingual localization package:
+If you make some changes in build process in PKGBUILD or make some another changes and then just run makepkg, it may (and in most cases I experienced, it will) not be build cleanly, but with previous built "caches". I had a lot of "wtf" experience when making pakage one way and getting different results (namely, translated items, which should not be translated).
+I have figured out, that if you remove $source dir and begin building from scratch, then you get expected results.
+So, I made a script "remakepkg", which removes that directory first and then makes package. As an additional convinience, I automatically install package and run kdenlive.
+
+* Run ``` ./remakepkg ```
+* Kdenlive will be automatically started. See what you wanted to see.
+* Close kdenlive.
+* (Optional) Make changes in code and go to step 1.
 
 
 ## Using bilingwise script manually:

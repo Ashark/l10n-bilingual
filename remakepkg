@@ -1,0 +1,21 @@
+#!/bin/bash
+
+# bilingwise_lang=ru
+# replace_lang=ts
+# inflate_lang=x-test
+srcdir="./src"
+
+# restore original files, as they may be replaced by bilingual files while previously building # does not seem to work
+# mv "$srcdir"/$bilingwise_lang/messages/kdemultimedia/kdenlive.po "$srcdir"/$inflate_lang/messages/kdemultimedia/kdenlive.po
+# mv "$srcdir"/$bilingwise_lang/messages/frameworks/kxmlgui5.po "$srcdir"/$inflate_lang/messages/frameworks/kxmlgui5.po
+# mv "$srcdir"/$bilingwise_lang/messages/frameworks/kconfigwidgets5.po "$srcdir"/$inflate_lang/messages/frameworks/kconfigwidgets5.po
+
+# remove src dir
+rm -rf  "$srcdir"
+
+# remove build dir
+# rm -rf  "$srcdir"/$inflate_lang-build # already deleted
+
+echo "remaking package..."
+makepkg -fi
+kdenlive > /dev/null 2>/dev/null # run kdenlive
