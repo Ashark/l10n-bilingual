@@ -95,4 +95,11 @@ msgstr "&Файл"
 msgid "Minus sign. For numbers: &#x2212;42"
 msgstr "Знак минус. Для номеров: &#x2212;42"
 
+# case 13:
+#: kedittoolbar.cpp:1217
+#, kde-format
+msgctxt "@item:intable Action name in toolbar editor"
+msgid "%1"
+msgstr "%1"
+
 # some comment

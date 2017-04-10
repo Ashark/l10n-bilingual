@@ -171,6 +171,9 @@ do
                 echo -e "\tmsgid contains ampersand, drop it and stage one-line msgstr"
                 FIRST_STRING_IN_MSGID=`echo "${FIRST_STRING_IN_MSGID//&}"`
                 STAGED_SINGLE_LINE_MSGSTR="msgstr \"$FIRST_STRING_IN_MSGSTR ($FIRST_STRING_IN_MSGID)\""
+            elif [[ "$FIRST_STRING_IN_MSGID" = "%1" ]]; then
+                echo -e "\tThis is most likely something like \"Action name in toolbar editor\", do not bilingwise to prevent dubbing of bilingwised string"
+                STAGED_SINGLE_LINE_MSGSTR="msgstr \"%1\""
             else
                 STAGED_SINGLE_LINE_MSGSTR="msgstr \"$FIRST_STRING_IN_MSGSTR ($FIRST_STRING_IN_MSGID)\""
             fi
